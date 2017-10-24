@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -16,7 +17,8 @@ public class ThreadExportsTest {
   private CollectorRegistry registry = new CollectorRegistry();
   private ThreadExports collectorUnderTest;
 
-  private static final String[] EMPTY_LABEL = new String[0];
+  private static final String[] LABEL_NAMES = {"app_id", "application_name"};
+  private static final String[] LABEL_VALUES = {DefaultExports.getAppId(), DefaultExports.getAppName()};
 
   @Before
   public void setUp() {
@@ -31,35 +33,37 @@ public class ThreadExportsTest {
 
   @Test
   public void testThreadPools() {
+    Double sample = registry.getSampleValue(
+            "jvm_threads_current", LABEL_NAMES, LABEL_VALUES);
     assertEquals(
             300L,
             registry.getSampleValue(
-                    "jvm_threads_current", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_threads_current", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
             200L,
             registry.getSampleValue(
-                    "jvm_threads_daemon", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_threads_daemon", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
             301L,
             registry.getSampleValue(
-                    "jvm_threads_peak", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_threads_peak", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
             503L,
             registry.getSampleValue(
-                    "jvm_threads_started_total", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_threads_started_total", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
         3L,
             registry.getSampleValue(
-            "jvm_threads_deadlocked", EMPTY_LABEL, EMPTY_LABEL),
+            "jvm_threads_deadlocked", LABEL_NAMES, LABEL_VALUES),
         .0000001);
     assertEquals(
             3L,
             registry.getSampleValue(
-            "jvm_threads_deadlocked_monitor", EMPTY_LABEL, EMPTY_LABEL),
+            "jvm_threads_deadlocked_monitor", LABEL_NAMES, LABEL_VALUES),
             .0000001);
   }
 }

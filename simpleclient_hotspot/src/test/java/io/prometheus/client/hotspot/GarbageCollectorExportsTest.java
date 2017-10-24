@@ -22,6 +22,11 @@ public class GarbageCollectorExportsTest {
   private CollectorRegistry registry = new CollectorRegistry();
   private GarbageCollectorExports collectorUnderTest;
 
+  private static final String appIdName = "app_id";
+  private static final String appNameName = "application_name";
+  private static final String appIdValue = DefaultExports.getAppId();
+  private static final String appNameValue = DefaultExports.getAppName();
+
   @Before
   public void setUp() {
     when(mockGcBean1.getName()).thenReturn("MyGC1");
@@ -35,33 +40,34 @@ public class GarbageCollectorExportsTest {
 
   @Test
   public void testGarbageCollectorExports() {
+
     assertEquals(
         100L,
         registry.getSampleValue(
             "jvm_gc_collection_seconds_count",
-            new String[]{"gc"},
-            new String[]{"MyGC1"}),
+            new String[]{appIdName, appNameName, "gc"},
+            new String[]{appIdValue, appNameValue, "MyGC1"}),
         .0000001);
     assertEquals(
         10d,
         registry.getSampleValue(
             "jvm_gc_collection_seconds_sum",
-            new String[]{"gc"},
-            new String[]{"MyGC1"}),
+            new String[]{appIdName, appNameName, "gc"},
+            new String[]{appIdValue, appNameValue, "MyGC1"}),
         .0000001);
     assertEquals(
         200L,
         registry.getSampleValue(
             "jvm_gc_collection_seconds_count",
-            new String[]{"gc"},
-            new String[]{"MyGC2"}),
+            new String[]{appIdName, appNameName, "gc"},
+            new String[]{appIdValue, appNameValue, "MyGC2"}),
         .0000001);
     assertEquals(
         20d,
         registry.getSampleValue(
             "jvm_gc_collection_seconds_sum",
-            new String[]{"gc"},
-            new String[]{"MyGC2"}),
+            new String[]{appIdName, appNameName, "gc"},
+            new String[]{appIdValue, appNameValue, "MyGC2"}),
         .0000001);
   }
 }

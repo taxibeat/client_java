@@ -16,7 +16,8 @@ public class ClassLoadingExportsTest {
   private CollectorRegistry registry = new CollectorRegistry();
   private ClassLoadingExports collectorUnderTest;
 
-  private static final String[] EMPTY_LABEL = new String[0];
+  private static final String[] LABEL_NAMES = {"app_id", "application_name"};
+  private static final String[] LABEL_VALUES = {DefaultExports.getAppId(), DefaultExports.getAppName()};
 
   @Before
   public void setUp() {
@@ -31,17 +32,17 @@ public class ClassLoadingExportsTest {
     assertEquals(
             1000,
             registry.getSampleValue(
-                    "jvm_classes_loaded", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_classes_loaded", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
             2000L,
             registry.getSampleValue(
-                    "jvm_classes_loaded_total", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_classes_loaded_total", LABEL_NAMES, LABEL_VALUES),
             .0000001);
     assertEquals(
             500L,
             registry.getSampleValue(
-                    "jvm_classes_unloaded_total", EMPTY_LABEL, EMPTY_LABEL),
+                    "jvm_classes_unloaded_total", LABEL_NAMES, LABEL_VALUES),
             .0000001);
   }
 }

@@ -24,6 +24,10 @@ public class MemoryPoolsExportsTest {
   private List<MemoryPoolMXBean> mockList = Arrays.asList(mockPoolsBean1, mockPoolsBean2);
   private CollectorRegistry registry = new CollectorRegistry();
   private MemoryPoolsExports collectorUnderTest;
+  private static final String appIdName = "app_id";
+  private static final String appNameName = "application_name";
+  private static final String appIdValue = DefaultExports.getAppId();
+  private static final String appNameValue = DefaultExports.getAppName();
 
   @Before
   public void setUp() {
@@ -48,43 +52,43 @@ public class MemoryPoolsExportsTest {
         500000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_used",
-            new String[]{"pool"},
-            new String[]{"PS Eden Space"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue, "PS Eden Space"}),
         .0000001);
     assertEquals(
         1000000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_committed",
-            new String[]{"pool"},
-            new String[]{"PS Eden Space"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue, "PS Eden Space"}),
         .0000001);
     assertEquals(
         2000000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_max",
-            new String[]{"pool"},
-            new String[]{"PS Eden Space"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue, "PS Eden Space"}),
         .0000001);
     assertEquals(
         10000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_used",
-            new String[]{"pool"},
-            new String[]{"PS Old Gen"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue, "PS Old Gen"}),
         .0000001);
     assertEquals(
         20000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_committed",
-            new String[]{"pool"},
-            new String[]{"PS Old Gen"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue,"PS Old Gen"}),
         .0000001);
     assertEquals(
         3000000L,
         registry.getSampleValue(
             "jvm_memory_pool_bytes_max",
-            new String[]{"pool"},
-            new String[]{"PS Old Gen"}),
+            new String[]{appIdName, appNameName, "pool"},
+            new String[]{appIdValue, appNameValue,"PS Old Gen"}),
         .0000001);
   }
 
@@ -94,43 +98,43 @@ public class MemoryPoolsExportsTest {
         500000L,
         registry.getSampleValue(
             "jvm_memory_bytes_used",
-            new String[]{"area"},
-            new String[]{"heap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"heap"}),
         .0000001);
     assertEquals(
         1000000L,
         registry.getSampleValue(
             "jvm_memory_bytes_committed",
-            new String[]{"area"},
-            new String[]{"heap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"heap"}),
         .0000001);
     assertEquals(
         2000000L,
         registry.getSampleValue(
             "jvm_memory_bytes_max",
-            new String[]{"area"},
-            new String[]{"heap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"heap"}),
         .0000001);
     assertEquals(
         10000L,
         registry.getSampleValue(
             "jvm_memory_bytes_used",
-            new String[]{"area"},
-            new String[]{"nonheap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"nonheap"}),
         .0000001);
     assertEquals(
         20000L,
         registry.getSampleValue(
             "jvm_memory_bytes_committed",
-            new String[]{"area"},
-            new String[]{"nonheap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"nonheap"}),
         .0000001);
     assertEquals(
         3000000L,
         registry.getSampleValue(
             "jvm_memory_bytes_max",
-            new String[]{"area"},
-            new String[]{"nonheap"}),
+            new String[]{appIdName, appNameName, "area"},
+            new String[]{appIdValue, appNameValue,"nonheap"}),
         .0000001);
   }
 }
