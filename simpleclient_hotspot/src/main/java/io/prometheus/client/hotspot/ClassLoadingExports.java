@@ -6,7 +6,9 @@ import io.prometheus.client.GaugeMetricFamily;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ClassLoadingMXBean;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,18 +39,37 @@ public class ClassLoadingExports extends Collector {
   }
 
   void addClassLoadingMetrics(List<MetricFamilySamples> sampleFamilies) {
-    sampleFamilies.add(new GaugeMetricFamily(
-          "jvm_classes_loaded",
-          "The number of classes that are currently loaded in the JVM",
-          clBean.getLoadedClassCount()));
-    sampleFamilies.add(new CounterMetricFamily(
-          "jvm_classes_loaded_total",
-          "The total number of classes that have been loaded since the JVM has started execution",
-          clBean.getTotalLoadedClassCount()));
-    sampleFamilies.add(new CounterMetricFamily(
-          "jvm_classes_unloaded_total",
-          "The total number of classes that have been unloaded since the JVM has started execution",
-          clBean.getUnloadedClassCount()));
+    String applicationId = DefaultExports.getAppId();
+    String applicationName = DefaultExports.getAppName();
+    GaugeMetricFamily gmf;
+    CounterMetricFamily cmf;
+
+    /* Currently loaded class count */
+    int loadedClassCount = clBean.getLoadedClassCount();
+    gmf = new GaugeMetricFamily(
+            "jvm_classes_loaded",
+            "The number of classes that are currently loaded in the JVM",
+            Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), loadedClassCount);
+    sampleFamilies.add(gmf);
+
+    /* Total loaded class count */
+    long totalLoadedClassCount = clBean.getTotalLoadedClassCount();
+    cmf = new CounterMetricFamily(
+            "jvm_classes_loaded_total",
+            "The total number of classes that have been loaded since the JVM has started execution",
+            Arrays.asList("app_id", "application_name"));
+    cmf.addMetric(Arrays.asList(applicationId, applicationName), totalLoadedClassCount);
+    sampleFamilies.add(cmf);
+
+    /* Unloaded class count */
+    long unloadedClassCount = clBean.getUnloadedClassCount();
+    cmf = new CounterMetricFamily(
+            "jvm_classes_unloaded_total",
+            "The total number of classes that have been unloaded since the JVM has started execution",
+            Arrays.asList("app_id", "application_name"));
+    cmf.addMetric(Arrays.asList(applicationId, applicationName), unloadedClassCount);
+    sampleFamilies.add(cmf);
   }
 
 

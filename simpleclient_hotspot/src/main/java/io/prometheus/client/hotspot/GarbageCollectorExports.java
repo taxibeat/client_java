@@ -6,6 +6,7 @@ import io.prometheus.client.SummaryMetricFamily;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,13 +37,16 @@ public class GarbageCollectorExports extends Collector {
   }
 
   public List<MetricFamilySamples> collect() {
+    String applicationId = DefaultExports.getAppId();
+    String applicationName = DefaultExports.getAppName();
+
     SummaryMetricFamily gcCollection = new SummaryMetricFamily(
         "jvm_gc_collection_seconds",
         "Time spent in a given JVM garbage collector in seconds.",
-        Collections.singletonList("gc"));
+            Arrays.asList("app_id", "application_name", "gc"));
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
         gcCollection.addMetric(
-            Collections.singletonList(gc.getName()),
+                Arrays.asList(applicationId, applicationName, gc.getName()),
             gc.getCollectionCount(),
             gc.getCollectionTime() / MILLISECONDS_PER_SECOND);
     }

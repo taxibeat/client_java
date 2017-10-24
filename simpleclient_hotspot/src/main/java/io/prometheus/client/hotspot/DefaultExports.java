@@ -1,5 +1,7 @@
 package io.prometheus.client.hotspot;
 
+import java.util.ArrayList;
+
 /**
  * Registers the default Hotspot collectors.
  * <p>
@@ -15,6 +17,8 @@ package io.prometheus.client.hotspot;
  */
 public class DefaultExports {
   private static boolean initialized = false;
+  private static String appId = "not-set";
+  private static String appName = "not-set";
   /**
    * Register the default Hotspot collectors.
    */
@@ -28,6 +32,13 @@ public class DefaultExports {
       new VersionInfoExports().register();
       initialized = true;
     }
+
+
   }
+
+  public static String getAppId() {return appId;}
+  public static String getAppName() {return appName;}
+  public static void setAppId(String id) {appId = id;}
+  public static void setAppName(String name) {appName = name;}
 
 }

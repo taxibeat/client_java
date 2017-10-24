@@ -14,6 +14,7 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,34 +57,52 @@ public class StandardExports extends Collector {
   @Override
   public List<MetricFamilySamples> collect() {
     List<MetricFamilySamples> mfs = new ArrayList<MetricFamilySamples>();
+    String applicationName = DefaultExports.getAppName();
+    String applicationId = DefaultExports.getAppId();
+    GaugeMetricFamily gmf;
 
     try {
+
       // There exist at least 2 similar but unrelated UnixOperatingSystemMXBean interfaces, in
       // com.sun.management and com.ibm.lang.management. Hence use reflection and recursively go
       // through implemented interfaces until the method can be made accessible and invoked.
       Long processCpuTime = callLongGetter("getProcessCpuTime", osBean);
-      mfs.add(new CounterMetricFamily("process_cpu_seconds_total", "Total user and system CPU time spent in seconds.",
-          processCpuTime / NANOSECONDS_PER_SECOND));
+      CounterMetricFamily cmf = new CounterMetricFamily("process_cpu_seconds_total", "Total user and system CPU time spent in seconds.",
+              Arrays.asList("app_id", "application_name"));
+      Double total = processCpuTime / NANOSECONDS_PER_SECOND;
+      cmf.addMetric(Arrays.asList(applicationId, applicationName), total);
+      mfs.add(cmf);
     }
     catch (Exception e) {
       LOGGER.log(Level.FINE,"Could not access process cpu time", e);
     }
 
-    mfs.add(new GaugeMetricFamily("process_start_time_seconds", "Start time of the process since unix epoch in seconds.",
-        runtimeBean.getStartTime() / MILLISECONDS_PER_SECOND));
+    Double processTimeSeconds = runtimeBean.getStartTime() / MILLISECONDS_PER_SECOND;
+    gmf = new GaugeMetricFamily("process_start_time_seconds", "Start time of the process since unix epoch in seconds.",
+            Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), processTimeSeconds);
+    mfs.add(gmf);
+
 
     // There exist at least 2 similar but unrelated UnixOperatingSystemMXBean interfaces, in
     // com.sun.management and com.ibm.lang.management. Hence use reflection and recursively go
     // through implemented interfaces until the method can be made accessible and invoked.
     try {
       Long openFdCount = callLongGetter("getOpenFileDescriptorCount", osBean);
-      mfs.add(new GaugeMetricFamily(
-          "process_open_fds", "Number of open file descriptors.", openFdCount));
+      gmf = new GaugeMetricFamily(
+              "process_open_fds", "Number of open file descriptors.", Arrays.asList("app_id", "application_name"));
+      gmf.addMetric(Arrays.asList(applicationId, applicationName), openFdCount);
+      mfs.add(gmf);
+
       Long maxFdCount = callLongGetter("getMaxFileDescriptorCount", osBean);
-      mfs.add(new GaugeMetricFamily(
-          "process_max_fds", "Maximum number of open file descriptors.", maxFdCount));
-    } catch (Exception e) {
-      // Ignore, expected on non-Unix OSs.
+      gmf = new GaugeMetricFamily(
+              "process_max_fds", "Maximum number of open file descriptors.", Arrays.asList("app_id", "application_name"));
+      gmf.addMetric(Arrays.asList(applicationId, applicationName), maxFdCount);
+      mfs.add(gmf);
+    } catch (NoSuchMethodException nsme) {
+      LOGGER.warning(nsme.toString());
+    } catch (InvocationTargetException ite) {
+      LOGGER.warning(ite.toString());
     }
 
     // There's no standard Java or POSIX way to get memory stats,
@@ -93,7 +112,7 @@ public class StandardExports extends Collector {
         collectMemoryMetricsLinux(mfs);
       } catch (Exception e) {
         // If the format changes, log a warning and return what we can.
-        LOGGER.warning(e.toString());
+        LOGGER.warning("collectMemoryMetricsLinux@StandardExports:"+e.toString());
       }
     }
     return mfs;
@@ -146,18 +165,26 @@ public class StandardExports extends Collector {
     // statm/stat report in pages, and it's non-trivial to get pagesize from Java
     // so we parse status instead.
     BufferedReader br = null;
+    GaugeMetricFamily gmf;
+    String applicationId = DefaultExports.getAppId();
+    String applicationName = DefaultExports.getAppName();
+
     try {
       br = statusReader.procSelfStatusReader();
       String line;
       while ((line = br.readLine()) != null) {
         if (line.startsWith("VmSize:")) {
-          mfs.add(new GaugeMetricFamily("process_virtual_memory_bytes",
-              "Virtual memory size in bytes.",
-              Float.parseFloat(line.split("\\s+")[1]) * KB));
+          double vmSizeInBytes = Float.parseFloat(line.split("\\s+")[1]) * KB;
+          gmf = new GaugeMetricFamily("process_virtual_memory_bytes",
+                  "Virtual memory size in bytes.", Arrays.asList("app_id", "application_name"));
+          gmf.addMetric(Arrays.asList(applicationId, applicationName), vmSizeInBytes);
+          mfs.add(gmf);
         } else if (line.startsWith("VmRSS:")) {
-          mfs.add(new GaugeMetricFamily("process_resident_memory_bytes",
-              "Resident memory size in bytes.",
-              Float.parseFloat(line.split("\\s+")[1]) * KB));
+          double residentMemorySizeInBytes = Float.parseFloat(line.split("\\s+")[1]) * KB;
+          gmf = new GaugeMetricFamily("process_resident_memory_bytes",
+                  "Resident memory size in bytes.", Arrays.asList("app_id", "application_name"));
+          gmf.addMetric(Arrays.asList(applicationId, applicationName), residentMemorySizeInBytes);
+          mfs.add(gmf);
         }
       }
     } catch (IOException e) {

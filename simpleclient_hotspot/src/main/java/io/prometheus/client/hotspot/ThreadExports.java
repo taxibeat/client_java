@@ -7,6 +7,7 @@ import io.prometheus.client.GaugeMetricFamily;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -38,41 +39,61 @@ public class ThreadExports extends Collector {
   }
 
   void addThreadMetrics(List<MetricFamilySamples> sampleFamilies) {
-    sampleFamilies.add(
-        new GaugeMetricFamily(
-          "jvm_threads_current",
-          "Current thread count of a JVM",
-          threadBean.getThreadCount()));
+    String applicationId = DefaultExports.getAppId();
+    String applicationName = DefaultExports.getAppName();
+    GaugeMetricFamily gmf;
+    CounterMetricFamily cmf;
 
-    sampleFamilies.add(
-        new GaugeMetricFamily(
-          "jvm_threads_daemon",
-          "Daemon thread count of a JVM",
-          threadBean.getDaemonThreadCount()));
+    /* Current JVM threads */
+    int jvmThreadsCurrent = threadBean.getThreadCount();
+    gmf = new GaugeMetricFamily(
+            "jvm_threads_current",
+            "Current thread count of a JVM", Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), jvmThreadsCurrent);
+    sampleFamilies.add(gmf);
 
-    sampleFamilies.add(
-        new GaugeMetricFamily(
-          "jvm_threads_peak",
-          "Peak thread count of a JVM",
-          threadBean.getPeakThreadCount()));
+    /* Daemon thread count */
+    int daemonThreadCount = threadBean.getDaemonThreadCount();
+    gmf = new GaugeMetricFamily(
+            "jvm_threads_daemon",
+            "Daemon thread count of a JVM", Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), daemonThreadCount);
+    sampleFamilies.add(gmf);
 
-    sampleFamilies.add(
-        new CounterMetricFamily(
-          "jvm_threads_started_total",
-          "Started thread count of a JVM",
-          threadBean.getTotalStartedThreadCount()));
+    /* Peak thread count */
+    int peakThreadCount = threadBean.getPeakThreadCount();
+    gmf = new GaugeMetricFamily(
+            "jvm_threads_peak",
+            "Peak thread count of a JVM", Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), peakThreadCount);
+    sampleFamilies.add(gmf);
 
-    sampleFamilies.add(
-        new GaugeMetricFamily(
-        "jvm_threads_deadlocked",
-        "Cycles of JVM-threads that are in deadlock waiting to acquire object monitors or ownable synchronizers",
-        nullSafeArrayLength(threadBean.findDeadlockedThreads())));
+    /* Started thread count */
+    long totalStartedThreadCount = threadBean.getTotalStartedThreadCount();
+    cmf = new CounterMetricFamily(
+            "jvm_threads_started_total",
+            "Started thread count of a JVM", Arrays.asList("app_id", "application_name"));
+    cmf.addMetric(Arrays.asList(applicationId, applicationName), totalStartedThreadCount);
+    sampleFamilies.add(cmf);
 
-    sampleFamilies.add(
-        new GaugeMetricFamily(
-        "jvm_threads_deadlocked_monitor",
-        "Cycles of JVM-threads that are in deadlock waiting to acquire object monitors",
-        nullSafeArrayLength(threadBean.findMonitorDeadlockedThreads())));
+    /* Deadlocked threads waiting to acquire object monitors or ownable synchronizers count */
+    double findDeadlockedThreads = nullSafeArrayLength(threadBean.findDeadlockedThreads());
+    gmf = new GaugeMetricFamily(
+            "jvm_threads_deadlocked",
+            "Cycles of JVM-threads that are in deadlock waiting to acquire object monitors or ownable synchronizers",
+            Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), findDeadlockedThreads);
+    sampleFamilies.add(gmf);
+
+
+    /* Deadlocked threads waiting to acquire object monitors count */
+    double monitorDeadlockedThreads = nullSafeArrayLength(threadBean.findMonitorDeadlockedThreads());
+    gmf = new GaugeMetricFamily(
+            "jvm_threads_deadlocked_monitor",
+            "Cycles of JVM-threads that are in deadlock waiting to acquire object monitors",
+            Arrays.asList("app_id", "application_name"));
+    gmf.addMetric(Arrays.asList(applicationId, applicationName), monitorDeadlockedThreads);
+    sampleFamilies.add(gmf);
   }
 
   private static double nullSafeArrayLength(long[] array) {
